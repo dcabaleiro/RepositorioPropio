@@ -1,0 +1,66 @@
+version: '3.7'
+services:
+    eureka-server:
+        image: microservicios/eureka-server:latest
+        mem_limit: 700m
+        ports:
+           - "8761:8761"
+        networks:
+        - local-network
+    user-microservice:
+        image: microservicios/user_microservice:v1.0
+        mem_limit: 700m
+        ports:
+        - "8080:8080"
+        networks:
+        - local-network
+        depends_on:
+        - db
+        - eureka-server
+    controlador-user-microservice:
+        image: microservicios/controlador-user-microservice:v1.0
+        mem_limit: 700m
+        ports:
+        - "8100:8100"
+        networks:
+        - local-network
+        depends_on:
+        - user-microservice
+        - eureka-server
+    api-gateway:
+        image: microservicios/api-gateway:v1.0
+        mem_limit: 700m
+        ports:
+        - "8765:8765"
+        networks:
+        - local-network
+        depends_on:
+        - user-microservice
+        - controlador-user-microservice
+        - eureka-server
+    db:
+        image: postgres:alpine3.18
+        mem_limit: 700m
+        ports:
+           - "5432:5432"
+        networks:
+        - local-network
+        environment:
+            - POSTGRES_PASSWORD=Prueba1
+            - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+            - LANG=en_US.utf8
+            - PG_MAJOR=15
+            - PG_VERSION=15.3
+            - PG_SHA256=ffc7d4891f00ffbf5c3f4eab7fbbced8460b8c0ee63c5a5167133b9e6599d932
+            - DOCKER_PG_LLVM_DEPS=llvm15-dev
+            - PGDATA=/var/lib/postgresql/data
+        volumes:
+        - almacenamientoBBDD:/var/lib/postgresql/data
+
+networks:
+    local-network:
+    
+volumes:
+    almacenamientoBBDD:
+        name: 81a138ee578b1282dd1627000c5c8337635bca8c8e7702c3b44a9f5b1a318ffb
+        external: true
